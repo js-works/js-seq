@@ -19,12 +19,50 @@ export default class Seq<T> implements Iterable<T> {
                 + '- use static factory methods instead');
     }
 
-    toString(): String {
+    toString(): string {
         return 'Seq/instance';
     }
 
     [Symbol.iterator](): Iterator<T> {
-        return null;
+        const [generate, finalize] = iterate(this);
+
+        let done = false;
+
+        return {
+            // TODO - what about first argument of function 'next'?!?
+            next() {
+                if (done) {
+                    return { value: undefined, done: true};
+                }
+
+                let item;
+
+                try {
+                    item = generate();
+                } catch(e) {
+                    done = true;
+                    finalize();
+                    throw e;
+                }
+
+                if (item === endOfSeq) {
+                    done = true;
+                    finalize();
+                }
+                
+                return item === endOfSeq
+                    ? { value: undefined, done: true }
+                    : { value: item, done: false };
+            },
+            /* TODO - implement functions 'throw' and 'return
+            throw(e) {
+                // TODO
+            },
+            return(value) {
+                // TODO
+            }
+            */
+        };
     }
 
     /**
@@ -451,10 +489,15 @@ export default class Seq<T> implements Iterable<T> {
 
 // --- locals -------------------------------------------------------
 
+/**
+ * @hidden
+ */
 const
     endOfSeq = Object.freeze({}),
-    doNothing: () => void = () => {},
-    endSequencing: () => any = () => endOfSeq,
+
+     doNothing: () => void = () => {},
+
+     endSequencing: () => any = () => endOfSeq,
 
     iteratorSymbol = typeof Symbol === 'function' && Symbol.iterator
         ? Symbol.iterator
@@ -462,54 +505,18 @@ const
     
     emptySeq: Seq<any> = createSeq(() => [endSequencing, doNothing]);
 
-(<any>Seq).prototype[iteratorSymbol] = function () {
-    const [generate, finalize] = iterate(this);
-
-    let done = false;
-
-    return {
-        // TODO - what about first argument of function 'next'?!?
-        next() {
-            if (done) {
-                return { value: undefined, done: true};
-            }
-
-            let item;
-
-            try {
-                item = generate();
-            } catch(e) {
-                done = true;
-                finalize();
-                throw e;
-            }
-
-            if (item === endOfSeq) {
-                done = true;
-                finalize();
-            }
-            
-            return item === endOfSeq
-                ? { value: undefined, done: true }
-                : { value: item, done: false };
-        },
-        /* TODO - implement functions 'throw' and 'return
-        throw(e) {
-            // TODO
-        },
-        return(value) {
-            // TODO
-        }
-        */
-    };
-};
-
+/**
+ * @hidden
+ */
 function createSeq<T>(generator: () => ((() => any) | [() => any, () => void])): Seq<T> {
     const ret = Object.create(Seq.prototype);
     ret.__generator = generator;
     return ret;
 }
 
+/**
+ * @hidden
+ */
 function iterate(seq: Seq<any>): [() => any, () => void] {
     let ret;
 
