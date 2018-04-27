@@ -32,9 +32,5 @@
     "test-watch": "node_modules/.bin/mocha -w -r ts-node/register src/test/**/*.ts",
     "docs": "node_modules/.bin/shx rm -rf ./dist/docs && \"node_modules/.bin/cross-conf-env\" typedoc --options typedoc.json src/main/api/ -name \"js-seq vnpm_package_version\"",
     "all": "npm run compress && npm run test && npm run docs && \"node_modules/.bin/shx\" echo Finished successfully."
-  },
-  "dependencies": {
-    "js-spec": "^0.1.20",
-    "react": "^16.3.2"
   }
 }
