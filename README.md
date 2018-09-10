@@ -1,10 +1,13 @@
 # js-seq
+
+[![Licence](https://img.shields.io/badge/licence-LGPLv3-blue.svg?style=flat)](https://github.com/js-works/js-spec/blob/master/LICENSE)
+[![npm version](https://img.shields.io/npm/v/js-seq.svg?style=flat)](https://www.npmjs.com/package/js-seq)
+[![Build status](https://travis-ci.org/js-works/js-seq.svg)](https://travis-ci.org/js-works/js-seq)
+[![Coverage status](https://coveralls.io/repos/github/js-works/js-seq/badge.svg?branch=master)](https://coveralls.io/github/js-works/js-seq?branch=master)
+![Dependencies](https://img.shields.io/badge/dependencies-none-green.svg?style=flat)
+
 Lazy sequences in JavaScript.
 Allows to use sequence methods like "map", "filter", "reduce" etc. in a non-strict/lazy way.
-
-[![licence](https://img.shields.io/badge/licence-LGPLv3-blue.svg?style=flat)](https://github.com/js-works/js-spec/blob/master/LICENSE)
-[![Coverage Status](https://coveralls.io/repos/github/js-works/js-seq/badge.svg?branch=master)](https://coveralls.io/github/js-works/js-seq?branch=master)
-![dependencies](https://img.shields.io/badge/dependencies-none-green.svg?style=flat)
 
 
 ## Installation
