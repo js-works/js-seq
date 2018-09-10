@@ -1,12 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES5",
-    "module": "umd",
     "noImplicitAny": true,
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
-    "lib": ["es7", "dom"],
+    "lib": ["es7"],
     "rootDir": "src",
     "outDir": "build",
     "typeRoots": [

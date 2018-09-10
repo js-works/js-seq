@@ -24,9 +24,9 @@
   "extends": "eslint:recommended",
 
   "rules": {
-    "indent": ["error", 4],
+    "indent": ["error", 2],
     "quotes": ["error", "single", { "avoidEscape": true }],
-    "semi": "error",
+    "semi": ["error", "never"],
     "no-console": ["off"]
   }
 }
