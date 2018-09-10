@@ -1,6 +1,27 @@
-import { describe, it } from 'mocha';
-import { expect } from 'chai';
-import Seq from '../../../src/main/api/Seq';
+import { describe, it } from 'mocha'
+import { expect } from 'chai'
+import Seq from '../../../src/main/api/Seq'
+
+/**
+ * @test {Seq.constructor}
+ */
+describe('Testing constructor of Seq', () => {
+  it('should not be allowed to call Seq.constructor directory', () => {
+    expect((): any => new (<any>Seq))
+        .to.throw('[Seq.constructor] Constructor is not callable '
+          + '- use static factory methods instead')
+  })
+})
+
+/**
+ * @test {Seq.toString}
+ */
+describe('Testing static method Seq.toString', () => {
+  it('should convert class Seq to string properly', () => {
+    expect(Seq.toString())
+        .to.eql('[class Seq]')
+  })
+})
 
 /**
  * @test {Seq.empty}
@@ -9,8 +30,8 @@ describe('Testing static factory method Seq.empty', () => {
   it('should return an empty seq', () => {
     expect(Seq.empty().toArray())
         .to.eql([])
-  });
-});
+  })
+})
 
 /**
  * @test {Seq.of}
@@ -20,14 +41,14 @@ describe('Testing static factory method Seq.of', () => {
     expect(Seq.of(2, 4, 6)
         .toArray())
         .to.eql([2, 4, 6])
-  });
+  })
 
   it('should return an empty seq if no item is provided', () => {
     expect(Seq.of()
         .toArray())
         .to.eql([])
-  });
-});
+  })
+})
 
 /**
  * @test {Seq.adjust}
@@ -37,70 +58,90 @@ describe('Testing static factory method Seq.adjust', () => {
     expect(Seq.adjust(undefined)
         .toArray())
         .to.eql([])
-  });
+  })
 
   it('should adjust null properly', () => {
     expect(Seq.adjust(null)
         .toArray())
         .to.eql([])
-  });
+  })
 
   it('should adjust a non-seqable propery', () => {
     expect(Seq.adjust(42)
         .toArray())
         .to.eql([42])
-  });
+  })
 
   it('should adjust a string properly', () => {
     expect(Seq.adjust('some text')
         .toArray())
         .to.eql(['some text'])
-  });
+  })
   
   it('should adjust an iterable properly', () => {
     expect(Seq.adjust([1, 2, 3])
         .toArray())
         .to.eql([1, 2, 3])
-  });
-});
+  })
+})
 
 /**
  * @test {Seq.empty}
  */
 describe('Testing static factory method Seq.from', () => {
-  it('should create a seq from an iterable object (=> object[Symbol.iterator])', () => {
+  it('should create a seq from an array', () => {
     expect(Seq.from([2, 4, 6])
         .toArray())
         .to.eql([2, 4, 6])
-  });
+  })
+  
+  it('should create a seq from an string', () => {
+    expect(Seq.from('abc')
+        .toArray())
+        .to.eql(['a', 'b', 'c'])
+  })
+
+  it('should create a seq from an iterable object (=> object[Symbol.iterator])', () => {
+    const iterable = {
+      [Symbol.iterator]: function* () {
+        yield 11
+        yield 22
+        yield 33
+      }
+    }
+    
+    expect(Seq.from(iterable)
+        .toArray())
+        .to.eql([11, 22, 33])
+  })
 
   it('should return a seq of characters if a string is given as input', () => {
     expect(Seq.from('Hello').toArray())
         .to.eql(['H', 'e', 'l', 'l', 'o'])
-  });
+  })
 
   it('should return the same seq if a seq is given as input', () => {
-    const seq = Seq.of(2, 4, 6);
+    const seq = Seq.of(2, 4, 6)
 
     expect(Seq.from(seq))
-        .to.equal(seq);
-  });
+        .to.equal(seq)
+  })
 
   it('should return an empty seq if the input is not seqable', () => {
     [undefined, null, true, false, {prop: 42}].forEach(value =>
         expect(Seq.from(<any>value).count()).to.eql(0))
-  });
+  })
 
   it('should create a Seq from a generator function', () => {
     const seq = Seq.from(function * () {
-      yield 1;
-      yield 2;
-      yield 3;
-    });
+      yield 1
+      yield 2
+      yield 3
+    })
 
-    expect(seq.toArray()).to.eql([1, 2, 3]);
-  });
-});
+    expect(seq.toArray()).to.eql([1, 2, 3])
+  })
+})
 
 /**
  * @test {Seq.concat}
@@ -109,23 +150,23 @@ describe('Testing static method Seq.concat', () => {
   it ('should concatenate multiple seqs', () => {
     expect(Seq.concat(Seq.of(1, 2, 3), Seq.of(44, 55, 66)).toArray())
         .to.eql([1, 2, 3, 44, 55, 66])
-  });
+  })
 
   it ('should concatenate multiple seqables', () => {
     expect(Seq.concat([1, 2, 3], Seq.of(44, 55, 66)).toArray())
         .to.eql([1, 2, 3, 44, 55, 66])
-  });
+  })
 
   it ('should concatenate empty seqs to an empty seq', () => {
     expect(Seq.concat(Seq.empty(), Seq.from([])).toArray())
         .to.eql([])
-  });
+  })
 
   it ('should concatenate empty seqables to an empty seq', () => {
     expect(Seq.concat([], Seq.from([])).toArray())
         .to.eql([])
-  });
-});
+  })
+})
 
 /**
  * @test {Seq.flatten}
@@ -134,27 +175,27 @@ describe('Testing static method Seq.flatten', () => {
   it ('should flatten a seq of seqs to a concatenated seq', () => {
     expect(Seq.flatten(Seq.of(Seq.of(1, 2, 3), Seq.of(44, 55, 66))).toArray())
         .to.eql([1, 2, 3, 44, 55, 66])
-  });
+  })
 
   it ('should flatten a seq of seqables to a concatenated seq', () => {
     expect(Seq.flatten(Seq.of([1, 2, 3], [44, 55, 66])).toArray())
         .to.eql([1, 2, 3, 44, 55, 66])
-  });
+  })
 
   it ('should flatten a seqable of seqables to a concatenated seq', () => {
     expect(Seq.flatten([[1, 2, 3], [44, 55, 66]]).toArray())
         .to.eql([1, 2, 3, 44, 55, 66])
-  });
+  })
 
   it ('should flatten an empty seq to an empty seq', () => {
     expect(Seq.flatten(Seq.empty()).count())
         .to.eql(0)
-  });
+  })
 
   it ('should fllatten an empty seqable to an empty seq', () => {
     expect(Seq.flatten([]).toArray())
         .to.eql([])
-  });
+  })
 })
 /**
  * @test {Seq.iterate}
@@ -165,15 +206,15 @@ describe('Testing static factory method Seq.iterate', () => {
         .take(5)
         .toArray())
         .to.eql([1, 2, 3, 4, 5])
-  });
+  })
 
   it('should build seq of fibonacci numbers', () => {
     expect(Seq.iterate([1, 1], (n1, n2) => n1 + n2)
         .take(7)
         .toArray())
         .to.eql([1, 1, 2, 3, 5, 8, 13])
-  });
-});
+  })
+})
 
 /**
  * @test {Seq.repeat}
@@ -183,8 +224,8 @@ describe('Testing static factory method Seq.repeat', () => {
     expect(Seq.repeat(0, 4)
         .toArray())
         .to.eql([0, 0, 0, 0])
-  });
-});
+  })
+})
 
 /**
  * @test {Seq.range}
@@ -194,52 +235,63 @@ describe('Testing static factory method Seq.range', () => {
     expect(Seq.range(1, 5)
         .toArray())
         .to.eql([1, 2, 3, 4])
-  });
+  })
 
   it('should generate a seq of some succeeding even negative natural numbers', () => {
     expect(Seq.range(-2, -10, -2)
         .toArray())
         .to.eql([-2, -4, -6, -8])
-  });
+  })
 
   it('should support infinite ranges of positive number', () => {
     expect(Seq.range(1)
         .take(2000)
         .count())
         .to.eql(2000)
-  });
+  })
 
   it('should support infinite ranges of negative number', () => {
     expect(Seq.range(-1, -Infinity, -1)
         .take(2000)
         .count())
         .to.eql(2000)
-  });
-});
+  })
+})
 
 /**
  * @test {Seq.isSeqable}
  */
 describe('Testing static method Seq.isSeqable', () => {
   it('should determine whether or not an object is seqable', () => {
-    const f = Seq.isSeqable;
+    const f = Seq.isSeqable
 
     expect([f(undefined), f(null), f(true), f(42), f([]), f([1, 2]), f('some text'), f(Seq.empty())])
-        .to.eql([false, false, false, false, true, true, true, true]);
-  });
-});
+        .to.eql([false, false, false, false, true, true, true, true])
+  })
+})
 
 /**
  * @test {Seq.isSeqableObject}
  */
 describe('Testing static method Seq.isSeqableObject', () => {
   it('should determine whether or not an object is seqable and not a string', () => {
-    const f = Seq.isSeqableObject;
+    const f = Seq.isSeqableObject
 
     expect([f(undefined), f(null), f(true), f(42), f([]), f([1, 2]), f('some text'), f(Seq.empty())])
-        .to.eql([false, false, false, false, true, true, false, true]);
-  });
-});
+        .to.eql([false, false, false, false, true, true, false, true])
+  })
+})
+
+/**
+ * @test {Seq#toString}
+ */
+describe('Testing method Seq#toString', () => {
+  it('should convert a instance of Seq to a string properly', () => {
+    expect(Seq.of(42).toString())
+        .to.eql('[object Seq]')
+  })
+})
+
 /**
  * @test {Seq#map}
  */
@@ -249,7 +301,7 @@ describe('Testing method Seq#map', () => {
         .map(n => n * n)
         .toArray())
         .to.eql([1, 4, 9])
-  });
+  })
 
   it('should map empty Seqs to empty seqs', () => {
     expect(Seq.of<any>()
@@ -257,7 +309,7 @@ describe('Testing method Seq#map', () => {
         .toArray()
         .length)
         .to.equal(0)
-  });
+  })
 
   it('should map empty Seqs to empty seqs', () => {
     expect(Seq.empty()
@@ -265,13 +317,13 @@ describe('Testing method Seq#map', () => {
         .toArray()
         .length)
         .to.equal(0)
-  });
+  })
 
   it('should throw a TypeError if alleged function is not really a function', () => {
     expect(() => Seq.empty().map(<any>'invalid!!!'))
         .to.throw(TypeError)
-  });
-});
+  })
+})
 
 /**
  * @test {Seq#filter}
@@ -282,20 +334,20 @@ describe('Testing method Seq#filter', () => {
         .filter(n => n % 2 == 0)
         .toArray())
         .to.eql([2, 4, 6, 8])
-  });
+  })
 
   it('should map empty seq to empty seq', () => {
     expect(Seq.empty()
         .filter(n => n % 2 == 0)
         .toArray())
         .to.eql([])
-  });
+  })
 
   it('should throw a TypeError if alleged function is not really a function', () => {
     expect(() => Seq.empty().filter(<any>'invalid!!!'))
         .to.throw(TypeError)
-  });
-});
+  })
+})
 
 /**
  * @test {Seq#flatMap}
@@ -306,7 +358,7 @@ describe('Testing method Seq#flatMap', () => {
         .flatMap(item => Seq.of([item, item * 10]))
         .toArray())
         .to.eql([[1, 10], [2, 20], [3, 30]])
-  });
+  })
 
   it('should allow list comprehension with seqs', () => {
     expect(Seq.of('A', 'B')
@@ -314,8 +366,8 @@ describe('Testing method Seq#flatMap', () => {
                   .flatMap(b => Seq.of('' + a + b)))
         .toArray())
         .to.eql(['A1', 'A2', 'A3', 'B1', 'B2', 'B3'])
-  });
-});
+  })
+})
 
 /**
  * @test {Seq#takeWhile}
@@ -326,27 +378,27 @@ describe('Testing method Seq#takeWhile', () => {
         .takeWhile(n => n <= 10)
         .toArray())
         .to.eql([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-  });
+  })
 
   it('should return an empty seq if the first item is not matching the predicate yet', () => {
     expect(Seq.range(1, 5)
         .takeWhile(n => n > 10)
         .toArray())
         .to.eql([])
-  });
+  })
 
   it('should map empty seq to empty seq', () => {
     expect(Seq.empty()
         .takeWhile(n => n < 10)
         .toArray())
         .to.eql([])
-  });
+  })
 
   it('should throw a TypeError if alleged predicate is not really a function', () => {
     expect(() => Seq.empty().takeWhile(<any>'invalid!!!'))
         .to.throw(TypeError)
-  });
-});
+  })
+})
 
 /**
  * @test {Seq#skipWhile}
@@ -357,27 +409,27 @@ describe('Testing method Seq#skipWhile', () => {
         .skipWhile(n => n <= 10)
         .toArray())
         .to.eql([11, 12, 13, 14, 15, 16, 17, 18, 19])
-  });
+  })
 
   it('should return an empty seq none of the item is not matching the predicate', () => {
     expect(Seq.range(1, 5)
         .skipWhile(n => n < 10)
         .toArray())
         .to.eql([])
-  });
+  })
 
   it('should map empty seq to empty seq', () => {
     expect(Seq.empty()
         .skipWhile(n => n < 10)
         .toArray())
         .to.eql([])
-  });
+  })
 
   it('should throw a TypeError if alleged predicate is not really a function', () => {
     expect(() => Seq.empty().skipWhile(<any>'invalid!!!'))
         .to.throw(TypeError)
-  });
-});
+  })
+})
 
 /**
  * @test {Seq#take}
@@ -388,22 +440,22 @@ describe('Testing method Seq#take', () => {
         .take(5)
         .toArray())
         .to.eql([0, 1, 2, 3, 4,])
-  });
+  })
 
   it('should return an empty seq if the number of items to select is zero', () => {
     expect(Seq.range(0, 5)
         .take(0)
         .toArray())
         .to.eql([])
-  });
+  })
 
   it('should return an empty seq if the number of items to select is negative', () => {
     expect(Seq.range(0, 5)
         .take(-10)
         .toArray())
         .to.eql([])
-  });
-});
+  })
+})
 
 /**
  * @test {Seq#skip}
@@ -414,39 +466,55 @@ describe('Testing method Seq#skip', () => {
         .skip(5)
         .toArray())
         .to.eql([5, 6, 7, 8, 9])
-  });
+  })
 
   it('should return an equal seq if the number of items to skip is zero', () => {
     expect(Seq.range(0, 5)
         .skip(0)
         .toArray())
         .to.eql([0, 1, 2, 3, 4])
-  });
+  })
 
   it('should return an empty seq if the number of  items to skip is negative', () => {
     expect(Seq.range(0, 5)
         .take(-10)
         .toArray())
         .to.eql([])
-  });
-});
+  })
+})
 
 /**
  * @test {Seq#reduce}
  */
 describe('Testing method Seq#reduce', () => {
+  it('should validate the arguments', () => {
+    expect(() => Seq.of(1, 2, 3).reduce(<any>'this should be a function'))
+      .to.throw('[Seq#reduce] First argument "f" must be a function')
+  })
+  
+  it('should work with undefined seed', () => {
+    expect(Seq.of(1, 2, 3).reduce((a, b) => a + b))
+        .to.eql(6)
+  })
+
+
   it('should return the seed if applied on empty seqs', () => {
     expect(Seq.empty()
         .reduce((a, b) => '' + a + b, 'seed'))
         .to.eql('seed')
-  });
+  })
 
   it('should determine the sum of the first 5 natural numbers', () => {
     expect(Seq.range(1, 6)
         .reduce((a, b) => a + b, 0))
         .to.eql(15)
-  });
-});
+  })
+
+  it('should throw an error if trying to reduce empty seq without providing a seed value', () => {
+    expect(() => Seq.empty().reduce((a, b) => a + b))
+      .to.throw('[Seq#reduce] Reduce of empty seq with no seed value')
+  })
+})
 
 /**
  * @test {Seq#count}
@@ -456,34 +524,39 @@ describe('Testing method Seq#count', () => {
     expect(Seq.empty()
         .count())
         .to.eql(0)
-  });
+  })
 
   it('should determine the length of a non-empty seq', () => {
     expect(Seq.range(0, 5)
         .count())
         .to.eql(5)
-  });
-});
+  })
+})
 
 /**
  * @test {Seq#forEach}
  */
 describe('Testing method Seq#forEach', () => {
+  it('should validate arguments', () => {
+    expect(() => Seq.of(42).forEach(<any>'this should be a function'))
+      .to.throw('[Seq#forEach] First argument "action" must be a function')
+  })
+
   it('should do nothing if applied on an empty seq', () => {
     expect(() => Seq.empty()
         .forEach(item => { throw 'error' }))
         .to.not.throw('error')
-  });
+  })
 
   it('should run a given action on each element of an non-empty seq', () => {
-    const result: number[] = [];
+    const result: number[] = []
 
     Seq.range(0, 5)
-      .forEach(item => result.push(item));
+      .forEach(item => result.push(item))
 
-    expect(result).to.eql([0, 1, 2, 3, 4]);
-  });
-});
+    expect(result).to.eql([0, 1, 2, 3, 4])
+  })
+})
 
 /**
  * @test {Seq#toArray}
@@ -493,14 +566,14 @@ describe('Testing method Seq#toArray', () => {
     expect(Seq.empty()
         .toArray())
         .to.eql([])
-  });
+  })
 
   it('should convert a non-empty seq to a corresponding non-empty array', () => {
     expect(Seq.of(2, 4, 42)
         .toArray())
         .to.eql([2, 4, 42])
-  });
-});
+  })
+})
 
 /**
  * @test {Seq#force}
@@ -511,24 +584,32 @@ describe('Testing method Seq#force', () => {
         .force()
         .toArray())
         .to.eql([])
-  });
+  })
 
   it('should iterate and cache a given seq immediately', () => {
-    let counter = 0;
+    let counter = 0
 
     const seq = Seq.of(2, 4, 42)
         .map(item => { ++counter; return item; })
-        .force();
+        .force()
 
-    const counter1 = counter;
+    const counter1 = counter
 
     // Try another force the make sure items have been cached before (= counter will not increase any longer)
-    seq.force();
+    seq.force()
 
-    const counter2 = counter;
+    const counter2 = counter
 
     expect(counter1).to.eql(3)
         && expect(counter2).to.eql(3)
-        && expect(seq.toArray()).to.eql([2, 4, 42]);
-  });
-});
+        && expect(seq.toArray()).to.eql([2, 4, 42])
+  })
+})
+
+describe('Testing method [Symbol.iterator]', () => {
+  it('should be possible to iterate a seq using the generator API', () => {
+    expect(Array.from(Seq.of(11, 22, 33)))
+      .to.eql([11, 22, 33])
+    
+  })
+})

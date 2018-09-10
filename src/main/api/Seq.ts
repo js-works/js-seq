@@ -6,8 +6,6 @@
  * poor performance.
  * 
  * See: https://jsfiddle.net/vavkuoLp/
- *
- * License: Public Domain
  */
 export default class Seq<T> implements Iterable<T> {
   /**
@@ -16,43 +14,43 @@ export default class Seq<T> implements Iterable<T> {
   private constructor() {
     throw new Error(
       '[Seq.constructor] Constructor is not callable '
-        + '- use static factory methods instead');
+        + '- use static factory methods instead')
   }
 
   toString(): string {
-    return 'Seq/instance';
+    return '[object Seq]'
   }
 
   [Symbol.iterator](): Iterator<T> {
-    const [generate, finalize] = iterate(this);
+    const [generate, finalize] = iterate(this)
 
-    let done = false;
+    let done = false
 
     return {
       // TODO - what about first argument of function 'next'?!?
       next() {
         if (done) {
-          return { value: undefined, done: true};
+          return { value: undefined, done: true}
         }
 
-        let item;
+        let item
 
         try {
-          item = generate();
+          item = generate()
         } catch(e) {
-          done = true;
-          finalize();
-          throw e;
+          done = true
+          finalize()
+          throw e
         }
 
         if (item === endOfSeq) {
-          done = true;
-          finalize();
+          done = true
+          finalize()
         }
         
         return item === endOfSeq
           ? { value: undefined, done: true }
-          : { value: item, done: false };
+          : { value: item, done: false }
       },
       /* TODO - implement functions 'throw' and 'return
       throw(e) {
@@ -62,7 +60,7 @@ export default class Seq<T> implements Iterable<T> {
         // TODO
       }
       */
-    };
+    }
   }
 
   /**
@@ -78,20 +76,20 @@ export default class Seq<T> implements Iterable<T> {
     }
 
     return createSeq<R>(() => {
-      const [generate, finalize] = iterate(this);
+      const [generate, finalize] = iterate(this)
       
-      let idx = -1;
+      let idx = -1
       
       const next = () => {
-        let item = generate();
+        let item = generate()
         
         return item === endOfSeq
           ? endOfSeq
-          : f(item, ++idx);
-      };
+          : f(item, ++idx)
+      }
       
-      return [next, finalize];
-    });
+      return [next, finalize]
+    })
   }
 
   /**
@@ -101,8 +99,8 @@ export default class Seq<T> implements Iterable<T> {
    * @return {Seq} Sequence of the filtered items
    * 
    * @example
-   *   let items = Seq.of(1, 2, 4, 8, 16, 32);
-   *   let result = items.filter(x => x < 10);
+   *   let items = Seq.of(1, 2, 4, 8, 16, 32)
+   *   let result = items.filter(x => x < 10)
    *   // 1, 2, 4, 8
    */ 
   filter(pred: (item: T, index: number) => boolean): Seq<T> {
@@ -111,26 +109,26 @@ export default class Seq<T> implements Iterable<T> {
     }
 
     return createSeq<T>(() => {
-      const [generate, finalize] = iterate(this);
+      const [generate, finalize] = iterate(this)
       
-      let idx = -1;
+      let idx = -1
       
       const next = () => {
-        let item = generate();
+        let item = generate()
 
         while (item !== endOfSeq && !pred(item, ++idx)) {
-          item = generate();
+          item = generate()
         }
 
-        return item;
-      };
+        return item
+      }
 
-      return [next, finalize];
-    });
+      return [next, finalize]
+    })
   }
 
   flatMap<R>(f: (item: T) => Seq<R>): Seq<R> {
-    return Seq.flatten(this.map(f));
+    return Seq.flatten(this.map(f))
   }
 
   takeWhile(pred: (item: T, index: number) => boolean): Seq<T>  {
@@ -139,20 +137,20 @@ export default class Seq<T> implements Iterable<T> {
     }
 
     return createSeq<T>(() => {
-      const [generate, finalize] = iterate(this);
+      const [generate, finalize] = iterate(this)
 
-      let idx = -1;
+      let idx = -1
 
       const next = () => {
-        const item = generate();
+        const item = generate()
 
         return item === endOfSeq || pred(item, ++idx) 
           ? item
-          : endOfSeq;
-      };
+          : endOfSeq
+      }
 
-      return  [next, finalize];
-    });
+      return  [next, finalize]
+    })
   }
 
   skipWhile(pred: (item: T, index: number) => boolean): Seq<T>  {
@@ -161,140 +159,142 @@ export default class Seq<T> implements Iterable<T> {
     }
 
     return createSeq<T>(() => {
-      const [generate, finalize] = iterate(this);
+      const [generate, finalize] = iterate(this)
 
       let
         idx = -1,
-        hasStarted = false;
+        hasStarted = false
 
       const next = () => {
-        let ret;
+        let ret
 
-        let item = generate();
+        let item = generate()
 
         if (!hasStarted) {
           while (item !== endOfSeq && pred(item, ++idx)) {
-            item = generate();
+            item = generate()
           }
 
-          hasStarted = item !== endOfSeq;
+          hasStarted = item !== endOfSeq
         }
 
-        return item;
-      };
+        return item
+      }
 
-      return  [next, finalize];
-    });
+      return  [next, finalize]
+    })
   }
 
   take(n: number): Seq<T> {
-    return this.takeWhile((x, index) => index < n);
+    return this.takeWhile((x, index) => index < n)
   }
 
   skip(n: number): Seq<T> {
-    return this.skipWhile((x, index) => index < n);
+    return this.skipWhile((x, index) => index < n)
   }
 
   reduce(f: (a: T, b: T) => T, seed?: T): T {
     if (typeof f !== 'function') {
-      throw new TypeError('[Seq.filter] Alleged function is not really a function')
+      throw new TypeError(
+        '[Seq#reduce] First argument "f" must be a function')
     }
 
-    const dummy = {};
-    let ret: any = dummy;
+    const dummy = {}
+    let ret: any = dummy
 
     this.forEach((value, index) => {
       if (index == 0) {
         if (seed === undefined) {
-          ret = value;
+          ret = value
         } else {
-          ret = f(seed, value);
+          ret = f(seed, value)
         }
       } else {
-        ret = f(ret, value);
+        ret = f(ret, value)
       }
-    });
+    })
 
     if (ret === dummy) {
       if (seed !== undefined) {
-        ret = seed;
+        ret = seed
       } else {
-        new TypeError(); // TODO
+        throw new TypeError('[Seq#reduce] Reduce of empty seq with no seed value')
       }
     }
 
-    return <T>ret;
+    return <T>ret
   }
 
   count(): number {
-    let ret = 0;
+    let ret = 0
   
-    this.forEach(() => ++ret);
+    this.forEach(() => ++ret)
 
-    return ret;
+    return ret
   }
 
   forEach(action: (item: T, index: number) => void) {
     if (typeof action !== 'function') {
-      throw new TypeError('[Seq.forEach] Alleged action is not really a function')
+      throw new TypeError(
+        '[Seq#forEach] First argument "action" must be a function')
     }
 
-    let idx = 0;
+    let idx = 0
 
-    const [next, finalize] = iterate(this);
+    const [next, finalize] = iterate(this)
 
     try {
-      let item;
+      let item
 
       do {
-        item = next();
+        item = next()
 
         if (item !== endOfSeq) {
           action(item, idx++)
         }
-      } while (item !== endOfSeq);
+      } while (item !== endOfSeq)
     } finally {
-      finalize();
+      finalize()
     }
   }
 
   toArray(): T[] {
-    const ret: T[] = [];
+    const ret: T[] = []
 
-    this.forEach(item => ret.push(item));
+    this.forEach(item => ret.push(item))
 
-    return ret;
+    return ret
   }
 
   force(): Seq<T> {
-    return Seq.from(this.toArray());
+    return Seq.from(this.toArray())
   }
 
   static toString(): String {
-    return 'Seq/class';
+    return '[class Seq]'
   }
 
   static empty(): Seq<any> {
-    return emptySeq;
+    return emptySeq
   }
 
   static of<T>(...items: T[]): Seq<T> {
-    return Seq.from(items);
+    return Seq.from(items)
   }
 
   static from<T>(items: Iterable<T> | (() => IterableIterator<T>)): Seq<T> {
-    let ret: Seq<T>;
+    let ret: Seq<T>
 
     if (items instanceof Seq) {
-      ret = <Seq<T>>items;
+      ret = <Seq<T>>items
     } else if (typeof items === 'string' || items instanceof Array) {
       ret = createSeq<T>(() => {
-        let index = 0;
+        let index = 0
 
-        return () => index < items.length ? items[index++] : endOfSeq;
-      });
+        return () => index < items.length ? items[index++] : endOfSeq
+      })
     } else if (items && typeof (<any>items)[iteratorSymbol] === 'function') {
-      ret = Seq.from<T>(() => (<any>items)[iteratorSymbol]());
+      ret = Seq.from<T>(() => (<any>items)[iteratorSymbol]())
     } else if (typeof items === 'function') {
       ret = createSeq<T>(() => {
         const
@@ -305,126 +305,126 @@ export default class Seq<T> implements Iterable<T> {
             result !== null && typeofResult === 'object',
 
           isEcmaScriptIterator = resultIsObject
-            && typeof result.next === 'function';
+            && typeof result.next === 'function'
 
         let
           itemQueue: any[] = null,
           generate: () => any = null,
-          finalize = null;
+          finalize = null
 
         if (isEcmaScriptIterator) {
-          generate = () => result.next();
+          generate = () => result.next()
         }
 
         function next() {
-          let item;
+          let item
 
           if (isEcmaScriptIterator) {
-            const token = generate();
+            const token = generate()
 
-            item = token.done ? endOfSeq : token.value;
+            item = token.done ? endOfSeq : token.value
           } else {
-            item = endOfSeq;
+            item = endOfSeq
           }
 
-          return item;
-        };
+          return item
+        }
 
-        return [next, finalize];
-      });
+        return [next, finalize]
+      })
     } else {
-      ret = emptySeq;
+      ret = emptySeq
     }
 
-    return ret;
+    return ret
   }
 
   static adjust<T>(it: T | Iterable<T>): Seq<T> {
-    let ret: Seq<T>;
+    let ret: Seq<T>
 
     if (it === undefined || it === null) {
-      ret = Seq.empty();
+      ret = Seq.empty()
     } else if (typeof it === 'string') {
-      ret = Seq.of(it);
+      ret = Seq.of(it)
     } else if (Seq.isSeqable(it)) {
-      ret = Seq.from(it as Seq<T>);
+      ret = Seq.from(it as Seq<T>)
     } else {
-      ret = Seq.of(it as T);
+      ret = Seq.of(it as T)
     }
 
-    return ret;
+    return ret
   }
 
   static concat<T>(...seqs: Iterable<T>[]): Seq<T> {
-    return Seq.flatten(Seq.from(seqs));
+    return Seq.flatten(Seq.from(seqs))
   }
 
   static flatten<T>(seqOfSeqs: Iterable<Iterable<T>>): Seq<T> {
     return createSeq<T>(() => {
       const [outerGenerate, outerFinalize] =
-        iterate(Seq.from(seqOfSeqs));
+        iterate(Seq.from(seqOfSeqs))
 
       let
         innerGenerate: () => any = null,
-        innerFinalize: () => void = null;
+        innerFinalize: () => void = null
 
       function next() {
-        let innerResult = endOfSeq;
+        let innerResult = endOfSeq
 
         while (innerResult === endOfSeq) {
           if (innerGenerate === null) {
-            let outerResult = outerGenerate();
+            let outerResult = outerGenerate()
             
             if (outerResult === endOfSeq) {
-              return endOfSeq;
+              return endOfSeq
             }
 
             [innerGenerate, innerFinalize] =
-              iterate(Seq.from(outerResult));
+              iterate(Seq.from(outerResult))
           }
 
-          innerResult = innerGenerate();
+          innerResult = innerGenerate()
 
           if (innerResult === endOfSeq) {
-            innerFinalize();
+            innerFinalize()
 
-            innerGenerate = null;
-            innerFinalize = null;
+            innerGenerate = null
+            innerFinalize = null
           }
         }
 
-        return innerResult;
-      };
+        return innerResult
+      }
 
       function finalize() {
         if (innerFinalize) {
-          innerFinalize();
+          innerFinalize()
         }
 
         if (outerFinalize) {
-          outerFinalize();
+          outerFinalize()
         }
       }
 
-      return [next, finalize];
-    });
+      return [next, finalize]
+    })
   }
 
   static iterate<T>(initialValues: T[], f: (...args: T[]) => T): Seq<T> {
-    const initVals: T[] = initialValues.slice();
+    const initVals: T[] = initialValues.slice()
 
     return createSeq<T>(() => {
-      const values: any[] = initVals.slice();
+      const values: any[] = initVals.slice()
 
       return () => {
-        values.push(f.apply(null, values));
-        return values.shift();
+        values.push(f.apply(null, values))
+        return values.shift()
       }
-    });
+    })
   }
 
   static repeat<T>(value: T, n: number = Infinity): Seq<T> {
-    return Seq.iterate([value], value => value).take(n);
+    return Seq.iterate([value], value => value).take(n)
   }
 
   /**
@@ -441,25 +441,25 @@ export default class Seq<T> implements Iterable<T> {
    * @return {Seq} Seq of iterated values
    */
   static range(start: number, end: number = null, step: number = 1): Seq<number> {
-    let ret =  Seq.iterate([start], value => value += step);
+    let ret =  Seq.iterate([start], value => value += step)
 
     if (end !== undefined && end !== null) {
-       const pred = step < 0 ? ((n: number) => n > end) : ((n: number) => n < end);
+       const pred = step < 0 ? ((n: number) => n > end) : ((n: number) => n < end)
 
-      ret = ret.takeWhile(<any>pred);
+      ret = ret.takeWhile(<any>pred)
     }
 
-    return ret;
+    return ret
   }
 
   static isSeqable(obj: any): boolean {
-    return !!obj && typeof obj[iteratorSymbol] === 'function';
+    return !!obj && typeof obj[iteratorSymbol] === 'function'
   }
 
   static isSeqableObject(obj: any): boolean {
     return !!obj
       && typeof obj === 'object'
-      && typeof obj[iteratorSymbol] === 'function';
+      && typeof obj[iteratorSymbol] === 'function'
   }
 }
 
@@ -479,36 +479,36 @@ const
     ? Symbol.iterator
     : '@@iterator',
   
-  emptySeq: Seq<any> = createSeq(() => [endSequencing, doNothing]);
+  emptySeq: Seq<any> = createSeq(() => [endSequencing, doNothing])
 
 /**
  * @hidden
  */
 function createSeq<T>(generator: () => ((() => any) | [() => any, () => void])): Seq<T> {
-  const ret = Object.create(Seq.prototype);
-  ret.__generator = generator;
-  return ret;
+  const ret = Object.create(Seq.prototype)
+  ret.__generator = generator
+  return ret
 }
 
 /**
  * @hidden
  */
 function iterate(seq: Seq<any>): [() => any, () => void] {
-  let ret;
+  let ret
 
-  const result = (<any>seq).__generator();
+  const result = (<any>seq).__generator()
   
   if (result instanceof Array) {
     const
       next = result[0] || endSequencing,
-      finalize = result[1] || doNothing;
+      finalize = result[1] || doNothing
 
-    ret = [next, finalize];
+    ret = [next, finalize]
   } else if (typeof result === 'function') {
-    ret = [result, doNothing];
+    ret = [result, doNothing]
   } else {
-    ret = [endSequencing, doNothing];
+    ret = [endSequencing, doNothing]
   }
 
-  return <any>ret;
+  return <any>ret
 }
