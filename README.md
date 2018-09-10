@@ -9,7 +9,6 @@
 Lazy sequences in JavaScript.
 Allows to use sequence methods like "map", "filter", "reduce" etc. in a non-strict/lazy way.
 
-
 ## Installation
 
 npm install --save js-seq
