@@ -73,4 +73,4 @@ For the full API of class Seq see the [API docs](https://unpkg.com/js-seq@0.0.6/
 
 ## Project status
 
-"js-seq" is currently in beta status.
+"js-seq" is currently in alpha status.
